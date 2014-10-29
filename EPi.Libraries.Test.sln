@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution Files", "{9C1BA615-DD1C-4597-94B1-0BD249A43D91}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.Localization.Bing", "EPi.Libraries.Localization.Bing\EPi.Libraries.Localization.Bing.csproj", "{EAE8D2BF-A3A6-4418-B49D-5FA5484D3BA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPi.Libraries.Localization", "EPi.Libraries.Localization\EPi.Libraries.Localization.csproj", "{4750AA22-03A8-48CB-A78E-32AE161C8C67}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EAE8D2BF-A3A6-4418-B49D-5FA5484D3BA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAE8D2BF-A3A6-4418-B49D-5FA5484D3BA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAE8D2BF-A3A6-4418-B49D-5FA5484D3BA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAE8D2BF-A3A6-4418-B49D-5FA5484D3BA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4750AA22-03A8-48CB-A78E-32AE161C8C67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4750AA22-03A8-48CB-A78E-32AE161C8C67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4750AA22-03A8-48CB-A78E-32AE161C8C67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4750AA22-03A8-48CB-A78E-32AE161C8C67}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
