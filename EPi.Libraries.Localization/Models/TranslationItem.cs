@@ -57,7 +57,6 @@ namespace EPi.Libraries.Localization.Models
         ///         <EPiServer:Translate runat="server" Text="/jeroenstemerdink/textone" />
         ///     ]]>
         /// </remarks>
-        [Searchable(false)]
         [JsonIgnore]
         public string LookupKey
         {
