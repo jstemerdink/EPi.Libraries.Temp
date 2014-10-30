@@ -85,6 +85,7 @@ namespace EPi.Libraries.Localization
         /// </summary>
         private TranslationFactory()
         {
+            this.TranslationContainerReference = this.GetTranslationContainer();
         }
 
         #endregion
@@ -131,19 +132,13 @@ namespace EPi.Libraries.Localization
         /// <summary>
         ///     Gets the reference to the translation container.
         /// </summary>
-        public PageReference TranslationContainerReference
-        {
-            get
-            {
-                return this.GetTranslationContainer();
-            }
-        }
+        public ContentReference TranslationContainerReference { get; private set; }
 
         /// <summary>
         ///     Gets a value indicating whether [a translation service is activated].
         /// </summary>
         /// <value><c>true</c> if [translation service activated]; otherwise, <c>false</c>.</value>
-        public bool TranslationServiceActivated
+        internal bool TranslationServiceActivated
         {
             get
             {
@@ -171,7 +166,7 @@ namespace EPi.Libraries.Localization
                 }
                 catch (ActivationException activationException)
                 {
-                    Logger.Error("[Localization] No translation service available", activationException);
+                    Logger.Info("[Localization] No translation service available", activationException);
                 }
 
                 return null;
@@ -186,7 +181,7 @@ namespace EPi.Libraries.Localization
         ///     Translates them all.
         /// </summary>
         /// <param name="content">The content.</param>
-        public void TranslateThemAll(IContent content)
+        internal void TranslateThemAll(IContent content)
         {
             if (!this.TranslationServiceActivated)
             {
@@ -212,6 +207,14 @@ namespace EPi.Libraries.Localization
         #endregion
 
         #region Methods
+
+        /// <summary>
+        ///     Sets the translation container.
+        /// </summary>
+        public void SetTranslationContainer()
+        {
+            this.TranslationContainerReference = this.GetTranslationContainer();
+        }
 
         /// <summary>
         ///     Gets the name of the translation container property.
@@ -299,7 +302,7 @@ namespace EPi.Libraries.Localization
         /// <returns>
         ///     The <see cref="PageReference" /> to the translation container.
         /// </returns>
-        private PageReference GetTranslationContainer()
+        private ContentReference GetTranslationContainer()
         {
             if (PageReference.IsNullOrEmpty(ContentReference.StartPage))
             {

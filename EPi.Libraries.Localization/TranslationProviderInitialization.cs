@@ -324,6 +324,11 @@ namespace EPi.Libraries.Localization
                 return;
             }
 
+            if (e.Content.ContentLink == ContentReference.StartPage)
+            {
+                TranslationFactory.Instance.SetTranslationContainer();
+            }
+
             if (!(e.Content is TranslationContainer) && !(e.Content is TranslationItem)
                 && !(e.Content is CategoryTranslationContainer))
             {
@@ -423,14 +428,13 @@ namespace EPi.Libraries.Localization
         }
 
         /// <summary>
-        ///     Reloads the provider.
+        ///     Update the translations.
         /// </summary>
         private void UpdateTranslations()
         {
             lock (ProviderLock)
             {
-                this.TranslationProvider.ClearStrings();
-                this.TranslationProvider.LoadTranslations();
+                this.TranslationProvider.UpdateTranslations();
             }
         }
 

@@ -106,6 +106,12 @@ namespace EPi.Libraries.Localization
             }
         }
 
+        internal void UpdateTranslations()
+        {
+            this.ClearStrings();
+            this.LoadTranslations();
+        }
+
         /// <summary>
         ///     Adds the key.
         /// </summary>
@@ -113,6 +119,13 @@ namespace EPi.Libraries.Localization
         /// <param name="cultureInfo">The culture information.</param>
         private void AddKey(ContentReference container, CultureInfo cultureInfo)
         {
+            if (ContentReference.IsNullOrEmpty(container))
+            {
+
+                return;
+
+            }
+
             List<PageData> children =
                 this.ContentRepository.Service.GetChildren<PageData>(container, new LanguageSelector(cultureInfo.Name))
                     .ToList();
