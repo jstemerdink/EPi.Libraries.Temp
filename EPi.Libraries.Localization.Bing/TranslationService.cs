@@ -141,6 +141,13 @@ namespace EPi.Libraries.Localization.Bing
         /// <returns>System.String.</returns>
         public string Translate(string toBeTranslated, string fromLang, string toLang)
         {
+            if (this.BingAccessToken == null || string.IsNullOrWhiteSpace(this.BingAccessToken.access_token))
+            {
+
+                return null;
+
+            }
+
             string headerValue = string.Format(
                 CultureInfo.InvariantCulture,
                 "Bearer {0}",
