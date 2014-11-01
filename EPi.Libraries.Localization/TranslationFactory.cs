@@ -134,6 +134,10 @@ namespace EPi.Libraries.Localization
         /// </summary>
         public ContentReference TranslationContainerReference { get; private set; }
 
+        #endregion
+
+        #region Properties
+
         /// <summary>
         ///     Gets a value indicating whether [a translation service is activated].
         /// </summary>
@@ -146,10 +150,6 @@ namespace EPi.Libraries.Localization
                        ?? (this.translationServiceActivated = this.TranslationService != null).Value;
             }
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         ///     Gets or sets the translation service.
@@ -178,6 +178,18 @@ namespace EPi.Libraries.Localization
         #region Public Methods and Operators
 
         /// <summary>
+        ///     Sets the translation container.
+        /// </summary>
+        public void SetTranslationContainer()
+        {
+            this.TranslationContainerReference = this.GetTranslationContainer();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
         ///     Translates them all.
         /// </summary>
         /// <param name="content">The content.</param>
@@ -202,18 +214,6 @@ namespace EPi.Libraries.Localization
             {
                 this.CreateLanguageBranch(page, languageBranch.Culture.Name);
             }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        ///     Sets the translation container.
-        /// </summary>
-        public void SetTranslationContainer()
-        {
-            this.TranslationContainerReference = this.GetTranslationContainer();
         }
 
         /// <summary>

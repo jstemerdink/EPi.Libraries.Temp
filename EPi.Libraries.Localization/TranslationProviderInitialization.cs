@@ -56,8 +56,6 @@ namespace EPi.Libraries.Localization
 
         #endregion
 
-        // Generate unique id for the reload event.
-
         #region Static Fields
 
         /// <summary>
@@ -66,15 +64,10 @@ namespace EPi.Libraries.Localization
         /// </summary>
         private static readonly ILog Log = LogManager.GetLogger(typeof(TranslationProviderInitialization));
 
-        //Generate unique id for the raiser.
-
-        /// <summary>
-        ///     A synchronize lock.
-        /// </summary>
-        private static readonly object ProviderLock = new object();
-
+        // Generate unique id for the raiser.
         private static readonly Guid TranslationProviderRaiserId = new Guid("cb4e20de-5dd3-48cd-b72a-0ecc3ce08cee");
 
+        // Generate unique id for the reload event.
         private static readonly Guid TranslationsUpdatedEventId = new Guid("9674113d-5135-49ff-8d2b-80ee6ae8f9e9");
 
         /// <summary>
@@ -362,15 +355,28 @@ namespace EPi.Libraries.Localization
             // set to 0 though, will be looked up after initialization in the provider itself.
             NameValueCollection configValues = new NameValueCollection { { "containerid", "0" } };
 
-            TranslationProvider translationProviderProvider = new TranslationProvider();
+            TranslationProvider temporaryTranslationProvider = null;
+            TranslationProvider localizationProvider;
 
-            // Instantiate the provider
-            translationProviderProvider.Initialize(ProviderName, configValues);
+            try
+            {
+                temporaryTranslationProvider = new TranslationProvider();
+                temporaryTranslationProvider.Initialize(ProviderName, configValues);
+                localizationProvider = temporaryTranslationProvider;
+                temporaryTranslationProvider = null;
+            }
+            finally
+            {
+                if (temporaryTranslationProvider != null)
+                {
+                    temporaryTranslationProvider.Dispose();
+                }
+            }
 
             // Add it at the end of the list of providers.
             try
             {
-                this.ProviderBasedLocalizationService.Providers.Add(translationProviderProvider);
+                this.ProviderBasedLocalizationService.Providers.Add(localizationProvider);
             }
             catch (NotSupportedException notSupportedException)
             {
@@ -418,11 +424,13 @@ namespace EPi.Libraries.Localization
                 return false;
             }
 
-            if (this.TranslationProvider != null)
+            if (this.TranslationProvider == null)
             {
-                // If found, remove it.
-                this.ProviderBasedLocalizationService.Providers.Remove(localizationProvider);
+                return false;
             }
+
+            // If found, remove it.
+            this.ProviderBasedLocalizationService.Providers.Remove(localizationProvider);
 
             return false;
         }
@@ -432,10 +440,13 @@ namespace EPi.Libraries.Localization
         /// </summary>
         private void UpdateTranslations()
         {
-            lock (ProviderLock)
+            if (this.TranslationProvider == null)
             {
-                this.TranslationProvider.UpdateTranslations();
+                Log.Info("[Localization] No translation provider found. Translations were not updated.");
+                return;
             }
+
+            this.TranslationProvider.UpdateTranslations();
         }
 
         #endregion

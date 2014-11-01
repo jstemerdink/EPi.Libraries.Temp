@@ -21,10 +21,12 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 
 using EPi.Libraries.Localization.Models;
 
@@ -39,8 +41,35 @@ namespace EPi.Libraries.Localization
     /// <summary>
     ///     The translation provider.
     /// </summary>
-    public class TranslationProvider : MemoryLocalizationProvider
+    public class TranslationProvider : MemoryLocalizationProvider, IDisposable
     {
+        #region Fields
+
+        /// <summary>
+        /// The cache lock
+        /// </summary>
+        private readonly ReaderWriterLockSlim cacheLock = new ReaderWriterLockSlim(
+            LockRecursionPolicy.SupportsRecursion);
+
+        /// <summary>
+        /// Indicate whether the provider has been disposed.
+        /// </summary>
+        private bool isDisposed;
+
+        #endregion
+
+        #region Constructors and Destructors
+
+        /// <summary>
+        ///     Finalizes an instance of the <see cref="TranslationProvider" /> class.
+        /// </summary>
+        ~TranslationProvider()
+        {
+            this.Dispose(false);
+        }
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -76,6 +105,72 @@ namespace EPi.Libraries.Localization
         #region Public Methods and Operators
 
         /// <summary>
+        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        ///     Gets all localized strings for the specified culture below the specified key.
+        /// </summary>
+        /// <param name="originalKey">The original key that was passed into any GetString method.</param>
+        /// <param name="normalizedKey">The <paramref name="originalKey" /> normalized and split into an array</param>
+        /// <param name="culture">The requested culture for the localized strings.</param>
+        /// <returns>All localized strings below the specified key.</returns>
+        /// <seealso
+        ///     cref="M:EPiServer.Framework.Localization.LocalizationService.GetStringByCulture(System.String,System.Globalization.CultureInfo)" />
+        public override IEnumerable<ResourceItem> GetAllStrings(
+            string originalKey,
+            string[] normalizedKey,
+            CultureInfo culture)
+        {
+            IEnumerable<ResourceItem> allStrings;
+
+            this.cacheLock.EnterReadLock();
+
+            try
+            {
+                allStrings = base.GetAllStrings(originalKey, normalizedKey, culture);
+            }
+            finally
+            {
+                this.cacheLock.ExitReadLock();
+            }
+
+            return allStrings;
+        }
+
+        /// <summary>
+        ///     Gets the localized string for the specified key in the specified culture.
+        /// </summary>
+        /// <param name="originalKey">The original key that was passed into any GetString method.</param>
+        /// <param name="normalizedKey">The <paramref name="originalKey" /> normalized and split into an array</param>
+        /// <param name="culture">The requested culture for the localized string.</param>
+        /// <returns>A localized string or <c>null</c> if no resource is found for the given key and culture.</returns>
+        /// <seealso
+        ///     cref="M:EPiServer.Framework.Localization.LocalizationService.GetStringByCulture(System.String,System.Globalization.CultureInfo)" />
+        public override string GetString(string originalKey, string[] normalizedKey, CultureInfo culture)
+        {
+            string translation;
+
+            this.cacheLock.EnterReadLock();
+
+            try
+            {
+                translation = base.GetString(originalKey, normalizedKey, culture);
+            }
+            finally
+            {
+                this.cacheLock.ExitReadLock();
+            }
+
+            return translation;
+        }
+
+        /// <summary>
         ///     Initializes the provider.
         /// </summary>
         /// <param name="name">
@@ -98,18 +193,58 @@ namespace EPi.Libraries.Localization
         /// <summary>
         ///     Load the translations.
         /// </summary>
-        internal void LoadTranslations()
+        private void LoadTranslations()
         {
-            foreach (CultureInfo cultureInfo in this.AvailableLanguages)
+            this.cacheLock.EnterWriteLock();
+
+            try
             {
-                this.AddKey(TranslationFactory.Instance.TranslationContainerReference, cultureInfo);
+                foreach (CultureInfo cultureInfo in this.AvailableLanguages)
+                {
+                    this.AddKey(TranslationFactory.Instance.TranslationContainerReference, cultureInfo);
+                }
+            }
+            finally
+            {
+                this.cacheLock.ExitWriteLock();
             }
         }
 
-        internal void UpdateTranslations()
+        /// <summary>
+        /// Updates the translations.
+        /// </summary>
+        public void UpdateTranslations()
         {
-            this.ClearStrings();
-            this.LoadTranslations();
+            this.cacheLock.EnterWriteLock();
+
+            try
+            {
+                this.ClearStrings();
+                this.LoadTranslations();
+            }
+            finally
+            {
+                this.cacheLock.ExitWriteLock();
+            }
+        }
+
+        /// <summary>
+        ///     Disposes the specified disposing.
+        /// </summary>
+        /// <param name="disposing">The disposing.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (this.isDisposed)
+            {
+                return;
+            }
+
+            if (this.cacheLock != null)
+            {
+                this.cacheLock.Dispose();
+            }
+
+            this.isDisposed = true;
         }
 
         /// <summary>
@@ -121,9 +256,7 @@ namespace EPi.Libraries.Localization
         {
             if (ContentReference.IsNullOrEmpty(container))
             {
-
                 return;
-
             }
 
             List<PageData> children =
