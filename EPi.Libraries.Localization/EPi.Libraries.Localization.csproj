@@ -192,6 +192,7 @@
     <Compile Include="TranslationProviderInitialization.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="EPiServer.Libraries.snk" />
     <None Include="packages.config" />
     <None Include="README.md" />
