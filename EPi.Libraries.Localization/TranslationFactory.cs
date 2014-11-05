@@ -304,14 +304,29 @@ namespace EPi.Libraries.Localization
         /// </returns>
         private ContentReference GetTranslationContainer()
         {
+            ContentReference containerPageReference = null;
+
+            // For a multi site setup there is no other option but to have a global container under the root.
+            TranslationContainer containerReference =
+                this.ContentRepository.Service.GetChildren<TranslationContainer>(ContentReference.RootPage)
+                    .FirstOrDefault();
+
+            if (containerReference != null)
+            {
+                Logger.Info("[Localization] First translation container under RootPage used.");
+
+                containerPageReference = containerReference.PageLink;
+
+                return containerPageReference;
+            }
+
+            
             if (PageReference.IsNullOrEmpty(ContentReference.StartPage))
             {
                 return PageReference.EmptyReference;
             }
 
             ContentData startPageData = this.ContentRepository.Service.Get<ContentData>(ContentReference.StartPage);
-
-            PageReference containerPageReference = null;
 
             PropertyInfo translationContainerProperty = GetTranslationContainerProperty(startPageData);
 
@@ -337,17 +352,17 @@ namespace EPi.Libraries.Localization
 
             Logger.Info("[Localization] No translation container specified.");
 
-            TranslationContainer containerReference =
-                this.ContentRepository.Service.GetChildren<PageData>(containerPageReference)
-                    .OfType<TranslationContainer>()
+            containerReference =
+                this.ContentRepository.Service.GetChildren<TranslationContainer>(containerPageReference)
                     .FirstOrDefault();
 
             if (containerReference == null)
             {
+                Logger.Info("[Localization] No translation container found.");
                 return containerPageReference;
             }
 
-            Logger.Info("[Localization] First translation container used.");
+            Logger.Info("[Localization] First translation container under StartPage used.");
 
             containerPageReference = containerReference.PageLink;
 
